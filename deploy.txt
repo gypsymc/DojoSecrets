@@ -1,0 +1,83 @@
+>> Create a git repo, have the following gitignore: https://github.com/digitalecho/RoR_login/blob/master/.gitignore
+    >> Remember to add pg to your Gemfile and bundle install. Have this committed.
+        >> gem 'pg'
+>> Create a EC2 instance according to: http://learn.codingdojo.com/m/9/4313/31507
+    >> PICK UBUNTU 14 NOT 16
+    >> When you get to ssh
+        >> On a mac you can use your terminal
+        >> On a windows machine use vagrant ssh and ssh within your vagrant(make sure to store the key in your vagrant folder)
+
+EC2 instructions
+-----------------------
+
+sudo apt-get update
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+\curl -sSL https://get.rvm.io | bash -s stable
+source ~/.rvm/scripts/rvm
+rvm requirements
+rvm install 2.3.1
+rvm use 2.3.1 --default
+ruby -v
+rvm rubygems current --force
+sudo apt-get install libcurl4-openssl-dev
+sudo dd if=/dev/zero of=/swap bs=1M count=1024
+sudo mkswap /swap
+sudo swapon /swap
+gem install passenger
+rvmsudo passenger-install-nginx-module
+  >> Select Ruby/Node
+  >> Choose option 1
+  >> Set nginx install directory: /etc/nginx
+sudo apt-get install postgresql postgresql-contrib libpq-dev
+sudo su postgres -c psql
+  >> CREATE ROLE ubuntu SUPERUSER LOGIN;
+  \q (to quit)
+sudo apt-get install nodejs
+sudo apt-get install git
+cd /var
+sudo mkdir www
+cd www
+sudo git clone ***your repo url***
+sudo chown -R ubuntu ***your_rails_project_folder***
+cd ***your_rails_project_folder***
+gem install bundler
+bundle install
+mkdir log
+sudo touch log/development.log
+sudo chmod 0666 log/development.log
+vi config/database.yml
+    >> it should look like this: https://gist.github.com/digitalecho/414412ea253e91d013cf12387cb65d4d
+    >> Press Esc then d G (case matters) to remove all lines. Or replace lines, whichever you're more comfortable with.
+    >> Remember I for insert mode and then paste. Press Esc and then :wq
+make sure gem 'pg' is inside your Gemfile, if not add it and bundle install
+rake db:create:all
+rake db:migrate
+sudo wget https://raw.github.com/JasonGiedymin/nginx-init-ubuntu/master/nginx -O /etc/init.d/nginx
+sudo chmod +x /etc/init.d/nginx
+cd /etc/init.d
+sudo vi nginx - you can go to a line by typing :21 for example to go to line 21
+  >> Change line 21(config:) to end with: /etc/nginx/conf/nginx.conf
+  >> Change line 22(pidfile:) to end with: /etc/nginx/logs/nginx.pid
+  >> Change line 87(NGINXPATH) to be NGINXPATH=${NGINXPATH:-/etc/nginx} Press Esc and then :wq
+sudo service nginx start
+cd /etc/nginx
+sudo mkdir sites-available
+sudo mkdir sites-enabled
+cd conf
+sudo vi nginx.conf
+  >>  After line 82(}): include /etc/nginx/sites-enabled/*; Press Esc and then :wq
+cd /etc/nginx/sites-available
+sudo touch rails.conf
+sudo vi rails.conf
+  >> Switch out values for server_name and root
+
+      server {
+        listen 80;
+        server_name ***your-EC2-public-ip***;
+        passenger_enabled on;
+        passenger_app_env development;
+        root /var/www/***your_app_name***/public;
+        }
+        Press Esc and then :wq
+sudo ln -s /etc/nginx/sites-available/rails.conf /etc/nginx/sites-enabled/rails.conf
+sudo service nginx restart

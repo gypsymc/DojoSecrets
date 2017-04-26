@@ -1,0 +1,35 @@
+<h1><%= @user.name %></h1>
+
+<%= link_to "Edit Profile", edit_user_path(@user) %>
+<%= link_to "Login", new_session_path%>
+<%= link_to "Secrets", secrets_path%>
+<%= link_to "My Page", user_path%>
+
+
+<form action = "/secrets" method = "post">
+    <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+	<input type="text" id="Content" name = "secret[content]">
+	<input type="submit" value = "Create Secret">
+</form>
+
+
+<h1>Secrets</h1>
+<% @user.secrets.each do |secret| %>
+	<h1><%= secret.content %></h1>
+	<h3><%= secret.likes.count %> likes</h3>
+	<% if secret.user == current_user %>
+		<form action = "/secrets/<%= secret.id %>" method = "post">
+		    <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+			<input type="hidden" name="_method" value="delete">
+			<input type = 'submit' value = 'Delete Secret'>
+		</form>
+	<% end %>
+<% end %>
+
+
+
+<h1>Secrets Liked</h1>
+<% @user.secrets_liked.each do |likes| %>
+<h4><%=  likes.content %></h4>
+<h3><%= likes.likes.count %> likes</h3>
+<% end %>
